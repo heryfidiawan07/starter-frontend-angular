@@ -53,4 +53,18 @@ export class AuthApiService {
     form.append('photo', file)
     return this.http.post<ApiResponse<User>>(`${this.base}/profile/photo`, form)
   }
+
+  oauthGoogle(access_token: string) {
+    return this.http.post<ApiResponse<AuthTokens>>(`${this.base}/auth/oauth/google`, { access_token })
+  }
+
+  oauthFacebook(access_token: string) {
+    return this.http.post<ApiResponse<AuthTokens>>(`${this.base}/auth/oauth/facebook`, { access_token })
+  }
+
+  getPublicConfig() {
+    return this.http.get<{ data: { google_client_id: string; facebook_app_id: string } }>(
+      `${environment.apiUrl}/api/v1/config`
+    )
+  }
 }
