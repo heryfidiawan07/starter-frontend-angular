@@ -1,0 +1,164 @@
+<app-main-layout title="Users">
+  <div class="space-y-4">
+    <!-- Toolbar -->
+    <div class="flex flex-col sm:flex-row gap-3 justify-between">
+      <div class="flex items-center gap-2">
+        <!-- Per-page -->
+        <div class="flex items-center gap-1.5 text-sm text-gray-600 shrink-0">
+          <span>Show</span>
+          <div class="relative">
+            <select
+              [value]="perPage()"
+              (change)="handlePerPage(+$any($event.target).value)"
+              class="h-9 pl-3 pr-7 rounded-lg border border-gray-300 text-sm bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer"
+            >
+              @for (n of PER_PAGE_OPTIONS; track n) {
+                <option [value]="n">{{ n === ALL_LABEL ? 'All' : n }}</option>
+              }
+            </select>
+            <lucide-icon [img]="ChevronDown" [size]="13" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+          </div>
+          <span>entries</span>
+        </div>
+        <div class="relative flex items-center">
+          <span class="absolute left-3 text-gray-400 pointer-events-none">
+            <lucide-icon [img]="Search" [size]="15"></lucide-icon>
+          </span>
+          <input
+            [value]="search()"
+            (input)="handleSearch($any($event.target).value)"
+            placeholder="Search by name or email..."
+            class="w-full sm:w-64 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent pl-10 pr-3 py-2 h-9"
+          />
+        </div>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <app-btn variant="outline" size="sm" [icon]="RefreshCw" (click)="fetchUsers()">Refresh</app-btn>
+        @if (can('user:create')) {
+          <app-btn size="sm" [icon]="Plus" (click)="openCreate()">Add User</app-btn>
+        }
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      @if (loading()) {
+        <app-spinner wrapClass="py-16"></app-spinner>
+      } @else {
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <th class="px-4 py-3 w-10 text-center">#</th>
+              <th class="px-4 py-3">User</th>
+              <th class="px-4 py-3 hidden md:table-cell">Role</th>
+              <th class="px-4 py-3 hidden sm:table-cell">Status</th>
+              @if (hasAnyRowAction()) {
+                <th class="px-4 py-3 text-right">Actions</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @if (users().length === 0) {
+              <tr>
+                <td [attr.colspan]="hasAnyRowAction() ? 5 : 4" class="text-center py-12 text-gray-400">No users found</td>
+              </tr>
+            }
+            @for (u of users(); track u.id; let idx = $index) {
+              <tr class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-4 py-3 text-center text-xs text-gray-400 font-mono tabular-nums">{{ rowNum(idx) }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <app-avatar [src]="u.photo" [name]="u.name" size="sm"></app-avatar>
+                    <div>
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-medium text-gray-900">{{ u.name }}</span>
+                        @if (u.is_root) {
+                          <app-badge variant="info">Root</app-badge>
+                        }
+                      </div>
+                      <p class="text-xs text-gray-400">{{ u.email }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3 hidden md:table-cell">
+                  <span class="text-gray-600">{{ u.role?.name ?? '—' }}</span>
+                </td>
+                <td class="px-4 py-3 hidden sm:table-cell">
+                  @if (u.is_active) {
+                    <app-badge variant="success">
+                      <span class="flex items-center gap-1">
+                        <lucide-icon [img]="ShieldCheck" [size]="10"></lucide-icon>
+                        Active
+                      </span>
+                    </app-badge>
+                  } @else {
+                    <app-badge variant="danger">
+                      <span class="flex items-center gap-1">
+                        <lucide-icon [img]="ShieldOff" [size]="10"></lucide-icon>
+                        Inactive
+                      </span>
+                    </app-badge>
+                  }
+                </td>
+                @if (hasAnyRowAction()) {
+                  <td class="px-4 py-3">
+                    <div class="flex items-center justify-end gap-1">
+                      @if (can('user:edit') && !u.is_root) {
+                        <app-btn variant="ghost" size="sm" [icon]="Image" (click)="openPhoto(u)" title="Upload photo"></app-btn>
+                      }
+                      @if (can('user:edit') && !u.is_root) {
+                        <app-btn variant="ghost" size="sm" [icon]="Pencil" (click)="openEdit(u)" title="Edit"></app-btn>
+                      }
+                      @if (can('user:delete') && !u.is_root) {
+                        <app-btn variant="ghost" size="sm" [icon]="Trash2" (click)="deleteTarget.set(u)" title="Delete" class="text-red-500 hover:bg-red-50"></app-btn>
+                      }
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (!loading() && meta().total > 0 && perPage() !== ALL_LABEL) {
+        <div class="border-t border-gray-100 px-4">
+          <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)"></app-pagination>
+        </div>
+      }
+      @if (!loading() && meta().total > 0 && perPage() === ALL_LABEL) {
+        <div class="border-t border-gray-100 px-4 py-3 text-xs text-gray-500">
+          Showing all {{ meta().total }} results
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (can('user:create') || can('user:edit')) {
+    <app-user-form-modal
+      [open]="formOpen()"
+      [user]="editUser()"
+      [roles]="roles()"
+      (closed)="formOpen.set(false)"
+      (success)="onFormSuccess()"
+    ></app-user-form-modal>
+  }
+
+  @if (can('user:edit')) {
+    <app-photo-upload-modal
+      [open]="photoOpen()"
+      [user]="photoUser()"
+      (closed)="photoOpen.set(false)"
+      (success)="onPhotoSuccess()"
+    ></app-photo-upload-modal>
+  }
+
+  @if (can('user:delete')) {
+    <app-confirm-dialog
+      [open]="!!deleteTarget()"
+      [message]="'Delete user &quot;' + deleteTarget()?.name + '&quot;? This action cannot be undone.'"
+      [loading]="deleting()"
+      (closed)="deleteTarget.set(null)"
+      (confirmed)="handleDelete()"
+    ></app-confirm-dialog>
+  }
+</app-main-layout>

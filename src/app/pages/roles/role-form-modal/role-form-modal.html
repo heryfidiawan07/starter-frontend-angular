@@ -1,0 +1,87 @@
+<app-modal [open]="open" [title]="isEdit ? 'Edit Role' : 'Add New Role'" size="2xl" (closed)="closed.emit()">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <app-input formControlName="name" label="Role Name" [required]="true" placeholder="e.g. Editor" [error]="errors['name'] || ''"></app-input>
+      <app-input formControlName="description" label="Description" placeholder="What this role can do..."></app-input>
+    </div>
+
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <label class="text-sm font-medium text-gray-700">Permissions</label>
+        <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ selectedCount }} selected</span>
+      </div>
+
+      <!-- Permission Tree -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto">
+        @for (cat of permissions; track cat.id) {
+          @if (cat.type === 'category') {
+            <div class="border-b border-gray-100 last:border-0">
+              <!-- Category header -->
+              <button
+                type="button"
+                (click)="toggleCategory(cat.id)"
+                class="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+              >
+                @if (isCategoryExpanded(cat.id)) {
+                  <lucide-icon [img]="ChevronDown" [size]="13" class="text-gray-400 shrink-0"></lucide-icon>
+                } @else {
+                  <lucide-icon [img]="ChevronRight" [size]="13" class="text-gray-400 shrink-0"></lucide-icon>
+                }
+                <span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">{{ cat.label }}</span>
+              </button>
+
+              @if (isCategoryExpanded(cat.id) && cat.children) {
+                <div class="px-3 py-2 space-y-2">
+                  @for (menu of cat.children; track menu.id) {
+                    @if (menu.type === 'menu') {
+                      <div>
+                        <!-- Menu item -->
+                        <label class="flex items-center gap-2 cursor-pointer py-1">
+                          <input
+                            type="checkbox"
+                            [checked]="isSelected(menu.id)"
+                            (change)="toggleMenu(menu)"
+                            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span class="text-sm font-medium text-gray-700">{{ menu.label }}</span>
+                        </label>
+                        @if (menu.children && menu.children.length > 0) {
+                          <div class="ml-6 space-y-1 mt-1">
+                            @for (action of menu.children; track action.id) {
+                              @if (action.type === 'action') {
+                                <label class="flex items-center gap-2 cursor-pointer py-0.5">
+                                  <input
+                                    type="checkbox"
+                                    [checked]="isSelected(action.id)"
+                                    [disabled]="!isSelected(menu.id)"
+                                    (change)="toggleAction(action, menu)"
+                                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-40"
+                                  />
+                                  <span class="text-xs text-gray-600">{{ action.label }}</span>
+                                </label>
+                              }
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+      <p class="text-xs text-gray-400">
+        Check menu name for page access. Actions are only active if their menu is checked.
+      </p>
+    </div>
+
+    <div class="flex gap-3 pt-1 border-t border-gray-100">
+      <app-btn type="button" variant="outline" class="flex-1" (click)="closed.emit()">Cancel</app-btn>
+      <app-btn type="submit" class="flex-1" [loading]="loading()" [icon]="Save">
+        {{ isEdit ? 'Save Changes' : 'Create Role' }}
+      </app-btn>
+    </div>
+  </form>
+</app-modal>

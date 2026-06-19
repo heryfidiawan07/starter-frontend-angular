@@ -1,0 +1,54 @@
+<header class="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+  <div class="flex items-center gap-2.5">
+    <button
+      (click)="menuClick.emit()"
+      class="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors lg:hidden"
+      aria-label="Toggle sidebar"
+    >
+      <lucide-icon [img]="Menu" [size]="20"></lucide-icon>
+    </button>
+    <h1 class="text-base font-semibold text-gray-800">{{ title }}</h1>
+  </div>
+
+  <div class="relative">
+    <button
+      (click)="toggleDropdown()"
+      class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+    >
+      <app-avatar [src]="user?.photo ?? null" [name]="user?.name ?? ''" size="sm"></app-avatar>
+      <div class="text-left hidden sm:block">
+        <p class="text-sm font-medium text-gray-800 leading-tight">{{ user?.name }}</p>
+        <p class="text-xs text-gray-400 leading-tight">{{ user?.email }}</p>
+      </div>
+      <lucide-icon [img]="ChevronDown" [size]="14" class="text-gray-400"></lucide-icon>
+    </button>
+
+    @if (dropdownOpen()) {
+      <div class="fixed inset-0 z-10" (click)="closeDropdown()"></div>
+      <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1">
+        <button
+          (click)="navigate('/profile')"
+          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          <lucide-icon [img]="User" [size]="15"></lucide-icon>
+          My Profile
+        </button>
+        <button
+          (click)="navigate('/profile/password')"
+          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          <lucide-icon [img]="Settings" [size]="15"></lucide-icon>
+          Change Password
+        </button>
+        <div class="border-t border-gray-100 my-1"></div>
+        <button
+          (click)="handleLogout()"
+          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+        >
+          <lucide-icon [img]="LogOut" [size]="15"></lucide-icon>
+          Logout
+        </button>
+      </div>
+    }
+  </div>
+</header>

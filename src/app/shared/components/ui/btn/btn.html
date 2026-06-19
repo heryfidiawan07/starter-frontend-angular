@@ -1,0 +1,8 @@
+<button [type]="type" [disabled]="isDisabled" [class]="'flex-1 ' + btnClass">
+  @if (loading) {
+    <lucide-icon [img]="Loader2" [size]="iconSize" class="animate-spin"></lucide-icon>
+  } @else if (icon) {
+    <lucide-icon [img]="icon" [size]="iconSize"></lucide-icon>
+  }
+  <ng-content></ng-content>
+</button>

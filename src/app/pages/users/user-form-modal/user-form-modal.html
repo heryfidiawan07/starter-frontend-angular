@@ -1,0 +1,85 @@
+<app-modal [open]="open" [title]="isEdit ? 'Edit User' : 'Add New User'" size="xl" (closed)="closed.emit()">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <!-- Personal Info -->
+    <div class="space-y-3">
+      <p class="text-[11px] font-semibold uppercase tracking-widest text-gray-400 pb-1 border-b border-gray-100">
+        Personal Information
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <app-input
+          formControlName="name"
+          label="Full Name"
+          [required]="true"
+          placeholder="John Doe"
+          [leftIcon]="UserIcon"
+          [error]="getError('name')"
+        ></app-input>
+        <app-input
+          formControlName="email"
+          label="Email Address"
+          type="email"
+          [required]="true"
+          placeholder="john@example.com"
+          [leftIcon]="Mail"
+          [error]="getError('email')"
+        ></app-input>
+      </div>
+    </div>
+
+    <!-- Credentials -->
+    <div class="space-y-3">
+      <p class="text-[11px] font-semibold uppercase tracking-widest text-gray-400 pb-1 border-b border-gray-100">
+        Credentials
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <app-input
+          formControlName="username"
+          label="Username"
+          placeholder="johndoe"
+          [leftIcon]="AtSign"
+          [error]="getError('username')"
+        ></app-input>
+        <app-input
+          formControlName="password"
+          [label]="isEdit ? 'New Password' : 'Password'"
+          type="password"
+          [required]="!isEdit"
+          [placeholder]="isEdit ? 'Leave blank to keep current' : 'Min. 8 characters'"
+          [leftIcon]="Lock"
+          [error]="getError('password')"
+        ></app-input>
+      </div>
+    </div>
+
+    <!-- Access & Status -->
+    <div class="space-y-3">
+      <p class="text-[11px] font-semibold uppercase tracking-widest text-gray-400 pb-1 border-b border-gray-100">
+        Access &amp; Status
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <app-select
+          formControlName="role_id"
+          label="Role"
+          [options]="roleOptions"
+          [leftIcon]="Shield"
+          [error]="getError('role_id')"
+        ></app-select>
+        <app-select
+          formControlName="is_active"
+          label="Account Status"
+          [options]="statusOptions"
+          [leftIcon]="ToggleLeft"
+          [error]="getError('is_active')"
+        ></app-select>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 pt-1 border-t border-gray-100">
+      <app-btn type="button" variant="outline" class="flex-1" (click)="closed.emit()">Cancel</app-btn>
+      <app-btn type="submit" class="flex-1" [loading]="loading()" [icon]="Save">
+        {{ isEdit ? 'Save Changes' : 'Create User' }}
+      </app-btn>
+    </div>
+  </form>
+</app-modal>

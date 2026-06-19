@@ -1,0 +1,129 @@
+<app-main-layout title="Roles">
+  <div class="space-y-4">
+    <!-- Toolbar -->
+    <div class="flex flex-col sm:flex-row gap-3 justify-between">
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 text-sm text-gray-600 shrink-0">
+          <span>Show</span>
+          <div class="relative">
+            <select
+              [value]="perPage()"
+              (change)="handlePerPage(+$any($event.target).value)"
+              class="h-9 pl-3 pr-7 rounded-lg border border-gray-300 text-sm bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer"
+            >
+              @for (n of PER_PAGE_OPTIONS; track n) {
+                <option [value]="n">{{ n === ALL_LABEL ? 'All' : n }}</option>
+              }
+            </select>
+            <lucide-icon [img]="ChevronDown" [size]="13" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+          </div>
+          <span>entries</span>
+        </div>
+        <div class="relative flex items-center">
+          <span class="absolute left-3 text-gray-400 pointer-events-none">
+            <lucide-icon [img]="Search" [size]="15"></lucide-icon>
+          </span>
+          <input
+            [value]="search()"
+            (input)="handleSearch($any($event.target).value)"
+            placeholder="Search roles..."
+            class="w-full sm:w-64 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent pl-10 pr-3 py-2 h-9"
+          />
+        </div>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <app-btn variant="outline" size="sm" [icon]="RefreshCw" (click)="fetchRoles()">Refresh</app-btn>
+        @if (can('role:create')) {
+          <app-btn size="sm" [icon]="Plus" (click)="openCreate()">Add Role</app-btn>
+        }
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      @if (loading()) {
+        <app-spinner wrapClass="py-16"></app-spinner>
+      } @else {
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <th class="px-4 py-3 w-10 text-center">#</th>
+              <th class="px-4 py-3">Role</th>
+              <th class="px-4 py-3 hidden md:table-cell">Permissions</th>
+              <th class="px-4 py-3 hidden sm:table-cell">Created</th>
+              @if (hasAnyRowAction()) {
+                <th class="px-4 py-3 text-right">Actions</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @if (roles().length === 0) {
+              <tr>
+                <td [attr.colspan]="hasAnyRowAction() ? 5 : 4" class="text-center py-12 text-gray-400">No roles found</td>
+              </tr>
+            }
+            @for (r of roles(); track r.id; let idx = $index) {
+              <tr class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-4 py-3 text-center text-xs text-gray-400 font-mono tabular-nums">{{ rowNum(idx) }}</td>
+                <td class="px-4 py-3">
+                  <p class="font-medium text-gray-900">{{ r.name }}</p>
+                  @if (r.description) {
+                    <p class="text-xs text-gray-400 mt-0.5">{{ r.description }}</p>
+                  }
+                </td>
+                <td class="px-4 py-3 hidden md:table-cell">
+                  <app-badge variant="info">{{ r.permissions?.length ?? 0 }} permissions</app-badge>
+                </td>
+                <td class="px-4 py-3 hidden sm:table-cell text-gray-400 text-xs">
+                  {{ r.created_at | date:'mediumDate' }}
+                </td>
+                @if (hasAnyRowAction()) {
+                  <td class="px-4 py-3">
+                    <div class="flex items-center justify-end gap-1">
+                      @if (can('role:edit')) {
+                        <app-btn variant="ghost" size="sm" [icon]="Pencil" (click)="openEdit(r)" title="Edit"></app-btn>
+                      }
+                      @if (can('role:delete')) {
+                        <app-btn variant="ghost" size="sm" [icon]="Trash2" (click)="deleteTarget.set(r)" title="Delete" class="text-red-500 hover:bg-red-50"></app-btn>
+                      }
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (!loading() && meta().total > 0 && perPage() !== ALL_LABEL) {
+        <div class="border-t border-gray-100 px-4">
+          <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)"></app-pagination>
+        </div>
+      }
+      @if (!loading() && meta().total > 0 && perPage() === ALL_LABEL) {
+        <div class="border-t border-gray-100 px-4 py-3 text-xs text-gray-500">
+          Showing all {{ meta().total }} results
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (can('role:create') || can('role:edit')) {
+    <app-role-form-modal
+      [open]="formOpen()"
+      [role]="editRole()"
+      [permissions]="permissions()"
+      (closed)="formOpen.set(false)"
+      (success)="onFormSuccess()"
+    ></app-role-form-modal>
+  }
+
+  @if (can('role:delete')) {
+    <app-confirm-dialog
+      [open]="!!deleteTarget()"
+      [message]="'Delete role &quot;' + deleteTarget()?.name + '&quot;? Users assigned to this role will lose access.'"
+      [loading]="deleting()"
+      (closed)="deleteTarget.set(null)"
+      (confirmed)="handleDelete()"
+    ></app-confirm-dialog>
+  }
+</app-main-layout>

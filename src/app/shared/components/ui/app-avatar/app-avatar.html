@@ -1,0 +1,11 @@
+@if (src) {
+  <img
+    [src]="src"
+    [alt]="name"
+    [class]="sizeClass + ' rounded-full object-cover ring-2 ring-white'"
+  />
+} @else {
+  <div [class]="sizeClass + ' rounded-full bg-primary-600 text-white flex items-center justify-center font-semibold ring-2 ring-white'">
+    {{ initials }}
+  </div>
+}

@@ -1,0 +1,36 @@
+<app-modal [open]="open" title="Upload Photo" size="sm" (closed)="handleClose()">
+  <div class="flex flex-col items-center gap-5">
+    <div class="relative w-24 h-24 cursor-pointer group" (click)="clickInput()">
+      <app-avatar [src]="preview() ?? user?.photo ?? null" [name]="user?.name ?? ''" size="lg"></app-avatar>
+      <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <lucide-icon [img]="ImagePlus" [size]="20" class="text-white"></lucide-icon>
+      </div>
+    </div>
+
+    <div
+      class="w-full border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors"
+      (click)="clickInput()"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)"
+    >
+      <lucide-icon [img]="Upload" [size]="20" class="text-gray-400 mx-auto mb-2 block"></lucide-icon>
+      <p class="text-sm text-gray-600 font-medium">Click or drag to upload</p>
+      <p class="text-xs text-gray-400 mt-1">JPEG, PNG, WebP — max 2MB</p>
+    </div>
+
+    <input
+      #fileInput
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      class="hidden"
+      (change)="onFileChange($event)"
+    />
+
+    <div class="flex gap-3 w-full">
+      <app-btn variant="outline" class="flex-1" (click)="handleClose()">Cancel</app-btn>
+      <app-btn class="flex-1" [disabled]="!file()" [loading]="uploading()" [icon]="Upload" (click)="handleUpload()">
+        Upload
+      </app-btn>
+    </div>
+  </div>
+</app-modal>

@@ -1,0 +1,33 @@
+<div class="flex items-center justify-between px-1 py-3 text-sm text-gray-600">
+  <span>Showing {{ from }}–{{ to }} of {{ meta.total }} results</span>
+  <div class="flex items-center gap-1">
+    <button
+      (click)="pageChange.emit(meta.page - 1)"
+      [disabled]="meta.page <= 1"
+      class="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+    >
+      <lucide-icon [img]="ChevronLeft" [size]="16"></lucide-icon>
+    </button>
+
+    @for (p of pages; track $index) {
+      @if (p === '...') {
+        <span class="px-2">…</span>
+      } @else {
+        <button
+          (click)="changePage(p)"
+          [class]="'w-8 h-8 rounded-lg text-sm font-medium transition-colors ' + (p === meta.page ? 'bg-primary-600 text-white' : 'hover:bg-gray-100')"
+        >
+          {{ p }}
+        </button>
+      }
+    }
+
+    <button
+      (click)="pageChange.emit(meta.page + 1)"
+      [disabled]="meta.page >= meta.total_page"
+      class="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+    >
+      <lucide-icon [img]="ChevronRight" [size]="16"></lucide-icon>
+    </button>
+  </div>
+</div>

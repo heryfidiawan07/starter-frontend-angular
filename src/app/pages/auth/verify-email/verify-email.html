@@ -1,0 +1,33 @@
+<app-auth-layout title="Email Verification">
+  <div class="flex flex-col items-center text-center gap-4 py-4">
+    @if (status() === 'loading') {
+      <app-spinner></app-spinner>
+    }
+
+    @if (status() === 'success') {
+      <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+        <lucide-icon [img]="CheckCircle" [size]="30" class="text-green-600"></lucide-icon>
+      </div>
+      <div>
+        <p class="font-semibold text-gray-900">Email Verified!</p>
+        <p class="text-sm text-gray-500 mt-1">Your email has been verified. You can now sign in.</p>
+      </div>
+      <a routerLink="/login" class="w-full">
+        <app-btn class="w-full" [icon]="LogIn">Sign In</app-btn>
+      </a>
+    }
+
+    @if (status() === 'error') {
+      <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+        <lucide-icon [img]="XCircle" [size]="30" class="text-red-600"></lucide-icon>
+      </div>
+      <div>
+        <p class="font-semibold text-gray-900">Verification Failed</p>
+        <p class="text-sm text-gray-500 mt-1">The link is invalid or has expired.</p>
+      </div>
+      <a routerLink="/login" class="w-full">
+        <app-btn variant="outline" class="w-full" [icon]="LogIn">Back to Sign In</app-btn>
+      </a>
+    }
+  </div>
+</app-auth-layout>

@@ -1,0 +1,12 @@
+<app-modal [open]="open" [title]="title" size="sm" (closed)="closed.emit()">
+  <div class="flex flex-col items-center gap-4 text-center">
+    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+      <lucide-icon [img]="AlertTriangle" [size]="24" class="text-red-600"></lucide-icon>
+    </div>
+    <p class="text-sm text-gray-600">{{ message }}</p>
+    <div class="flex gap-3 w-full">
+      <app-btn variant="outline" class="flex-1" (click)="closed.emit()">Cancel</app-btn>
+      <app-btn variant="danger" class="flex-1" [loading]="loading" (click)="confirmed.emit()">{{ confirmLabel }}</app-btn>
+    </div>
+  </div>
+</app-modal>
