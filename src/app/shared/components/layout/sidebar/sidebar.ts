@@ -6,7 +6,9 @@ import {
   LayoutDashboard, Users, Shield, Lock,
   Zap, UserCog, X, ChevronDown, ChevronRight,
   LucideIconData,
+  Circle
 } from 'lucide-angular'
+import * as Icons from 'lucide-angular'
 import { AuthService } from '../../../../core/services/auth.service'
 
 interface LeafItem {
@@ -40,13 +42,14 @@ export class Sidebar {
   @Input() open = false
   @Output() closed = new EventEmitter<void>()
 
-  private auth = inject(AuthService)
+  auth = inject(AuthService)
   private router = inject(Router)
 
   readonly Zap = Zap
   readonly X = X
   readonly ChevronDown = ChevronDown
   readonly ChevronRight = ChevronRight
+  readonly Circle = Circle
 
   menuConfig: CategoryGroup[] = [
     {
@@ -78,23 +81,28 @@ export class Sidebar {
     return url.startsWith('/users') || url.startsWith('/roles') || url.startsWith('/permissions')
   }
 
-  canSee(name: string): boolean {
-    const user = this.auth.user()
-    if (!user) return false
-    if (user.is_root) return true
-    return user.role?.permissions?.some((p) => p.name === name) ?? false
+  get isRoot(): boolean {
+    return this.auth.user()?.is_root ?? false
+  }
+
+  get userRoleMenus(): any[] {
+    return this.auth.user()?.role?.permissions || []
+  }
+
+  resolveIcon(iconString: string | null): LucideIconData {
+    if (!iconString) return Circle
+    const iconName = iconString.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
+    return (Icons as any)[iconName] || Circle
   }
 
   getVisibleLeafItems(group: CategoryGroup): LeafItem[] {
     return group.items
-      .filter((item) => item.type === 'leaf')
-      .filter((item) => this.canSee((item as LeafItem).name)) as LeafItem[]
+      .filter((item) => item.type === 'leaf') as LeafItem[]
   }
 
   getVisibleDropdowns(group: CategoryGroup): DropdownItem[] {
     return group.items
-      .filter((item) => item.type === 'dropdown')
-      .filter((item) => (item as DropdownItem).children.some((c) => this.canSee(c.name))) as DropdownItem[]
+      .filter((item) => item.type === 'dropdown') as DropdownItem[]
   }
 
   hasVisibleItems(group: CategoryGroup): boolean {
@@ -102,14 +110,11 @@ export class Sidebar {
   }
 
   getAllVisibleItems(group: CategoryGroup): (LeafItem | DropdownItem)[] {
-    return group.items.filter((item) => {
-      if (item.type === 'leaf') return this.canSee((item as LeafItem).name)
-      return (item as DropdownItem).children.some((c) => this.canSee(c.name))
-    })
+    return group.items
   }
 
   getVisibleChildren(item: DropdownItem): LeafItem[] {
-    return item.children.filter((c) => this.canSee(c.name))
+    return item.children
   }
 
   isRouteActive(route: string): boolean {

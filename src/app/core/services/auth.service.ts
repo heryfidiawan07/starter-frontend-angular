@@ -4,6 +4,7 @@ import type { User } from '../models/index'
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private _user = signal<User | null>(null)
+  userActions = signal<string[]>([])
   private _accessToken = signal<string | null>(null)
   private _refreshToken = signal<string | null>(null)
 

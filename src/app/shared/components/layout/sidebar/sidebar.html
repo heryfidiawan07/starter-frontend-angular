@@ -18,55 +18,98 @@
 
   <!-- Nav -->
   <nav class="flex-1 px-3 py-3 overflow-y-auto">
-    @for (group of menuConfig; track group.category) {
-      @if (hasVisibleItems(group)) {
-        <div class="mb-2">
-          <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 px-3 pt-3 pb-1.5 select-none">
-            {{ group.category }}
-          </p>
-          <div class="space-y-0.5">
-            @for (item of getAllVisibleItems(group); track $index) {
-              @if (item.type === 'leaf') {
-                <a
-                  [routerLink]="$any(item).route"
-                  [class]="'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isRouteActive($any(item).route) ? 'bg-primary-600 text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-white/10')"
-                >
-                  <lucide-icon [img]="item.icon" [size]="16"></lucide-icon>
-                  {{ item.label }}
-                </a>
-              } @else {
-                <!-- Dropdown -->
-                <div>
-                  <button
-                    (click)="toggleDropdown($any(item))"
-                    [class]="'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isDropdownChildActive($any(item)) ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/10')"
+    @if (isRoot) {
+      @for (group of menuConfig; track group.category) {
+        @if (hasVisibleItems(group)) {
+          <div class="mb-2">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 px-3 pt-3 pb-1.5 select-none">
+              {{ group.category }}
+            </p>
+            <div class="space-y-0.5">
+              @for (item of getAllVisibleItems(group); track $index) {
+                @if (item.type === 'leaf') {
+                  <a
+                    [routerLink]="$any(item).route"
+                    [class]="'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isRouteActive($any(item).route) ? 'bg-primary-600 text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-white/10')"
                   >
-                    <lucide-icon [img]="item.icon" [size]="16" class="shrink-0"></lucide-icon>
-                    <span class="flex-1 text-left">{{ item.label }}</span>
+                    <lucide-icon [img]="item.icon" [size]="16"></lucide-icon>
+                    {{ item.label }}
+                  </a>
+                } @else {
+                  <!-- Dropdown -->
+                  <div>
+                    <button
+                      (click)="toggleDropdown($any(item))"
+                      [class]="'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isDropdownChildActive($any(item)) ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/10')"
+                    >
+                      <lucide-icon [img]="item.icon" [size]="16" class="shrink-0"></lucide-icon>
+                      <span class="flex-1 text-left">{{ item.label }}</span>
+                      @if ($any(item).open) {
+                        <lucide-icon [img]="ChevronDown" [size]="13" class="opacity-60"></lucide-icon>
+                      } @else {
+                        <lucide-icon [img]="ChevronRight" [size]="13" class="opacity-60"></lucide-icon>
+                      }
+                    </button>
                     @if ($any(item).open) {
-                      <lucide-icon [img]="ChevronDown" [size]="13" class="opacity-60"></lucide-icon>
-                    } @else {
-                      <lucide-icon [img]="ChevronRight" [size]="13" class="opacity-60"></lucide-icon>
+                      <div class="mt-0.5 ml-3 pl-3 border-l border-white/10 space-y-0.5">
+                        @for (child of getVisibleChildren($any(item)); track child.route) {
+                          <a
+                            [routerLink]="child.route"
+                            [class]="'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isRouteActive(child.route) ? 'bg-primary-600 text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-white/10')"
+                          >
+                            <lucide-icon [img]="child.icon" [size]="15"></lucide-icon>
+                            {{ child.label }}
+                          </a>
+                        }
+                      </div>
                     }
-                  </button>
-                  @if ($any(item).open) {
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      }
+    } @else {
+      @for (group of userRoleMenus; track group.id) {
+        @if (group.children && group.children.length > 0) {
+          <div class="mb-2">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 px-3 pt-3 pb-1.5 select-none">
+              {{ group.label }}
+            </p>
+            <div class="space-y-0.5">
+              @for (item of group.children; track item.id) {
+                @if (!item.children || item.children.length === 0) {
+                  <a
+                    [routerLink]="item.route || '#'"
+                    [class]="'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isRouteActive(item.route) ? 'bg-primary-600 text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-white/10')"
+                  >
+                    <lucide-icon [img]="resolveIcon(item.icon)" [size]="16"></lucide-icon>
+                    {{ item.label }}
+                  </a>
+                } @else {
+                  <div>
+                    <div class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 opacity-80 cursor-default">
+                      <lucide-icon [img]="resolveIcon(item.icon)" [size]="16" class="shrink-0"></lucide-icon>
+                      <span class="flex-1 text-left">{{ item.label }}</span>
+                    </div>
                     <div class="mt-0.5 ml-3 pl-3 border-l border-white/10 space-y-0.5">
-                      @for (child of getVisibleChildren($any(item)); track child.route) {
+                      @for (child of item.children; track child.id) {
                         <a
-                          [routerLink]="child.route"
+                          [routerLink]="child.route || '#'"
                           [class]="'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ' + (isRouteActive(child.route) ? 'bg-primary-600 text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-white/10')"
                         >
-                          <lucide-icon [img]="child.icon" [size]="15"></lucide-icon>
+                          <lucide-icon [img]="resolveIcon(child.icon)" [size]="15"></lucide-icon>
                           {{ child.label }}
                         </a>
                       }
                     </div>
-                  }
-                </div>
+                  </div>
+                }
               }
-            }
+            </div>
           </div>
-        </div>
+        }
       }
     }
   </nav>

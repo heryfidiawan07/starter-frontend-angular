@@ -133,10 +133,35 @@ export class RoleFormModal implements OnChanges {
     if (!name) { this.errors['name'] = 'Name is required'; return }
 
     this.loading.set(true)
+
+    const allSelectedIds = new Set<string>(this.selected());
+    this.permissions.forEach(cat => {
+      if (cat.type === 'category' && cat.children) {
+        let catSelected = false;
+        cat.children.forEach(menu => {
+          let menuSelected = this.selected().has(menu.id);
+          if (menu.children) {
+            menu.children.forEach(action => {
+              if (this.selected().has(action.id)) {
+                menuSelected = true;
+              }
+            });
+          }
+          if (menuSelected) {
+            allSelectedIds.add(menu.id);
+            catSelected = true;
+          }
+        });
+        if (catSelected) {
+          allSelectedIds.add(cat.id);
+        }
+      }
+    });
+
     const payload = {
       name: name!,
       description: description ?? '',
-      permission_ids: Array.from(this.selected()),
+      permission_ids: Array.from(allSelectedIds),
     }
 
     const obs = this.isEdit

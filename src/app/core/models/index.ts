@@ -30,7 +30,7 @@ export interface Role {
   id: string
   name: string
   description: string | null
-  permissions?: Permission[]
+  permissions?: PermissionNode[];
   created_at: string
   updated_at: string
 }
@@ -61,4 +61,22 @@ export interface AuthTokens {
 export interface PaginatedData<T> {
   items: T[]
   meta: PageMeta
+}
+
+;
+export interface PermissionAction {
+  id: string;
+  name: string;
+  label: string;
+}
+;
+export interface PermissionNode {
+  id: string;
+  label: string;
+  name: string;
+  type: 'category' | 'menu';
+  icon: string | null;
+  route: string | null;
+  actions: PermissionAction[];
+  children?: PermissionNode[];
 }
